@@ -1,0 +1,27 @@
+- hosts: web
+  vars:
+   dockerport: 8081
+   contport: 8080
+   sudo: yes
+  tasks:
+   - name: Update apt repo
+     apt: update_cache=yes name=docker.io state=present
+   - name: Clone Git repo
+     git:
+       repo: https://github.com/lsaligrama2000/hellostaragile.git
+       dest: /home/lsaligrma2000/hellostaragile
+       force: yes
+   - name: Build
+     shell:
+       cmd: mvn package
+       chdir: /home/lsaligrama2000/hellostaragile
+   - name: Create Image
+     shell:
+       cmd: docker build -t mytomcat .
+       chdir: /home/lsaligrma2000/hellostaragile
+   - name: Remove Docker Container
+     shell:
+       cmd: docker rm --force mytomcat || echo
+   - name: Start Docker Container
+     shell:
+       cmd: docker run -d --name=mytomcat -p {{ dockerport }}:{{ contport }} mytomcat
